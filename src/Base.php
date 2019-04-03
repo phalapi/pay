@@ -1,6 +1,7 @@
 <?php
+namespace PhalApi\Pay;
 
-abstract class Pay_Base {
+abstract class Base {
 
     protected $config;
     protected $info;

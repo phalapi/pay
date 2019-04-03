@@ -1,4 +1,9 @@
 <?php
+namespace PhalApi\Pay\Engine;
+
+use PhalApi\Pay\Base;
+use PhalApi\Pay\Exception;
+
 /*
  * +----------------------------------------------------------------------
  * | 微信支付引擎
@@ -7,13 +12,11 @@
  * +----------------------------------------------------------------------
  * | Author: summer <aer_c@qq.com> <qq7579476>
  * +----------------------------------------------------------------------
- * | This is not a free software, unauthorized no use and dissemination.
- * +----------------------------------------------------------------------
  * | Date
  * +----------------------------------------------------------------------
  */
 
-class Pay_Engine_Wechat extends Pay_Base {
+class Wechat extends Base {
 
 	protected $snsapi_base_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?';
 	protected $openid_url = 'https://api.weixin.qq.com/sns/oauth2/access_token?';
@@ -48,7 +51,7 @@ class Pay_Engine_Wechat extends Pay_Base {
 
 	public function check() {
         if (!$this->config['appid'] || !$this->config['mchid'] || !$this->config['appsecret'] || !$this->config['key']) {
-        	DI()->logger->log('payError','wechat setting error');
+        	\PhalApi\DI()->logger->log('payError','wechat setting error');
             return false;
         }
         return true;
@@ -87,13 +90,13 @@ class Pay_Engine_Wechat extends Pay_Base {
         $this->values = $this->xmlToArray($response);
 
 		if($this->values['return_code'] != 'SUCCESS'){
-			DI()->logger->log('payError','支付失败', $this->values);
+			\PhalApi\DI()->logger->log('payError','支付失败', $this->values);
 			return false;
 		}
 
 		//验证签名
 		if(!$this->checkSign()){
-			DI()->logger->log('payError','签名错误', $this->values);
+			\PhalApi\DI()->logger->log('payError','签名错误', $this->values);
 			return false;
 		}
 
@@ -150,20 +153,20 @@ class Pay_Engine_Wechat extends Pay_Base {
         //转换为XML（转换前也需要同步排序，否则签名失败！请留意sign是否必须在最后！@dogstar 20160120）
         $xml = $this->arrayToXml($this->param);
 
-        DI()->logger->log('payError', '微信接口请求', array('url' => $url, 'params' => $this->param));
+        \PhalApi\DI()->logger->log('payError', '微信接口请求', array('url' => $url, 'params' => $this->param));
 
         //提交XML信息后，将返回的XML转换成数组
         $response = $this->postXmlCurl($xml, $url, $useCert, 6);
         if (empty($response)) {
-            throw new Pay_Exception('微信接口请求异常');
+            throw new Exception('微信接口请求异常');
         }
 
         $this->values = $this->xmlToArray($response);
 
-        DI()->logger->log('payError','微信接口返回', $this->values);
+        \PhalApi\DI()->logger->log('payError','微信接口返回', $this->values);
 
 		if($this->values['return_code'] != 'SUCCESS'){
-            throw new Pay_Exception($this->values['return_msg']);
+            throw new Exception($this->values['return_msg']);
 		}
 
         return $this->values;
@@ -176,12 +179,12 @@ class Pay_Engine_Wechat extends Pay_Base {
     	//xml转array
     	$this->values = $this->xmlToArray($notify);
 		if($this->values['return_code'] != 'SUCCESS'){
-			DI()->logger->log('payError','支付失败', $this->values);
+			\PhalApi\DI()->logger->log('payError','支付失败', $this->values);
 			return false;
 		}
 
 		if(!$this->checkSign()){
-			DI()->logger->log('payError','签名错误', $this->values);
+			\PhalApi\DI()->logger->log('payError','签名错误', $this->values);
 			return false;
 		}
 
@@ -307,7 +310,7 @@ EOT;
 		|| !array_key_exists("prepay_id", $this->values)
 		|| $this->values['prepay_id'] == ""){
 			$this->error = '参数错误';
-			DI()->logger->error('参数错误');
+			\PhalApi\DI()->logger->error('参数错误');
 			return false;
 		}
 		
@@ -535,7 +538,7 @@ EOT;
 			return $data;
 		} else { 
 			$error = curl_errno($ch);
-			DI()->logger->log('payError','curl出错，错误码', $error);
+			\PhalApi\DI()->logger->log('payError','curl出错，错误码', $error);
 			curl_close($ch);
 			return false;
 		}

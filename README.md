@@ -1,23 +1,26 @@
-#基于PhalApi的第三方支付拓展
+# PhalApi 2.x 的第三方支付扩展
 
-### 1.安装和配置
+## 安装和配置
 
-#### 1.1 扩展包下载
-从 PhalApi-Library 扩展库中下载获取 Pay 扩展包，如使用：
+修改项目下的composer.json文件，并添加：  
 ```
-git clone https://git.oschina.net/dogstar/PhalApi-Library.git
-然后把 Pay 目录下对应的文件移动至对应的目录
+    "phalapi/pay":"dev-master"
 ```
-#### 1.2 扩展包配置
-我们需要在 ./Config/app.php 配置文件中追加以下配置：
-##### 1.2.1 第三方支付配置
+然后执行```composer update```。 
+
+
+## 配置
+
+我们需要在 ./config/app.php 配置文件中追加以下配置：
+
+### 第三方支付配置
 ```
    /**
      * 支付相关配置
      */
     'Pay' => array(
         //异步/同步地址 如果域名指向到Public，那么地址应该是 http://你的域名/pay/
-        'notify_url' => 'http://你的域名/PhalApi/Public/pay/',
+        'notify_url' => 'http://www.xxx.com/phalapi/public/pay/',
 
         //支付宝wap端设置
         'aliwap' => array( 
@@ -56,36 +59,48 @@ alipay_public_key.pem 为支付宝合作伙伴密钥的支付宝公钥
 alipay_rsa_private_key.pem 为自己生成的rsa密钥
 ```
 
-### 2.入门使用
-#### 2.1 入口注册
-```
-$loader->addDirs('Library');
 
-//其他代码...
-
+## 注册
+在 ./config/di.php文件中，追加注册：
+```php
 //支付
-DI()->pay = new Pay_Lite();
+$di->pay = new \PhalApi\Pay\Lite();
 ```
-### 3. 使用接口进行支付
+
+## 使用
+
+### 手动复制PHP示例和入口文件
+
+把 ./vendor/phalapi/pay/demo 目录下的代码，复制到到当前项目的src的app内。命令是：
 ```
-找到Demo/Api/Pay.php这个放到对应的项目下，Notify.php也在同级目录下
-访问链接 http://你的域名/Public/项目/?service=Pay.index&type=wechat
+$ cp ./vendor/phalapi/pay/demo/* ./src/app/ -R 
+```
+
+同时，需要将支付入口PHP文件也复制到当前项目。把 ./vendor/phalapi/pay/public 目录下的代码，复制到到当前项目的public。命令是：
+```
+$ cp ./vendor/phalapi/pay/public/* ./public/ -R
+```
+
+
+### 使用接口进行支付
+
+访问链接 http://你的域名/public/pay/项目/?s=App.Pay.Index&type=wechat
 参数type为对应的支付引擎的名称。微信为wechat 支付宝wap端为aliwap
-```
-如果域名已经设置至Public目录，就不需要Public目录了
+
+如果域名已经设置public目录，就不需要public目录了
 
 如果需要测试微信JSAPI支付，需要在微信浏览器中测试，先将以上的访问链接生成为二维码，然后打开微信扫一扫就可以支付了
 
-#### 3.1 异步回调接口说明
+#### 异步回调接口说明
 ```
 //支付宝的异步回调接口
-http:://你的域名/Public/pay/aliwap/notify.php
+http:://你的域名/public/pay/aliwap/notify.php
 
 //支付宝同步回调接口
-http:://你的域名/Public/pay/aliwap/return.php
+http:://你的域名/public/pay/aliwap/return.php
 
 //微信异步回调接口
-http:://你的域名/Public/pay/wechat/notify.php
+http:://你的域名/public/pay/wechat/notify.php
 
 ```
 支付宝同步回调不知道为什么进行验证时会验证失败，为了节约时间，也没有再修复了，毕竟如果是做接口大部分用不到。如果有同学把问题解决了，请AT我 aer_c@qq.com QQ:7579476 或者添加PhalApi官方交流群：421032344 AT：Summer
@@ -124,7 +139,7 @@ PhalApi是一个PHP轻量级开源接口框架。我们致力于将PhalApi维护
             'remark' => '备注',
         );
 
-        $payLite = DI()->get('payLite', 'Pay_Lite');
+        $payLite = \PhalApi\DI()->get('payLite', 'Pay_Lite');
         $payLite->set('wechat');
 
         try {

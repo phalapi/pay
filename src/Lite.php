@@ -1,4 +1,6 @@
 <?php
+namespace PhalApi\Pay;
+
 /*
  * +----------------------------------------------------------------------
  * | 支付接口
@@ -7,13 +9,13 @@
  * +----------------------------------------------------------------------
  * | Author: summer <aer_c@qq.com> <qq7579476>
  * +----------------------------------------------------------------------
- * | This is not a free software, unauthorized no use and dissemination.
+ * | Modified: dogstar <chanzonghuang@gmail.com>
  * +----------------------------------------------------------------------
  * | Date
  * +----------------------------------------------------------------------
  */
 
-class Pay_Lite {
+class Lite {
 
     /**
      * 支付驱动实例
@@ -53,18 +55,20 @@ class Pay_Lite {
      * @param array  $config 配置
      */
     public function set($engine) {
+        $di = \PhalApi\DI();
+
         /* 配置 */
         $this->engine = strtolower($engine);
         $this->config = array();
 
-        $this->config['notify_url'] = DI()->config->get('app.Pay.notify_url') . $this->engine . '/notify.php';
-        $this->config['return_url'] = DI()->config->get('app.Pay.notify_url') . $this->engine . '/return.php';
+        $this->config['notify_url'] = $di->config->get('app.Pay.notify_url') . $this->engine . '/notify.php';
+        $this->config['return_url'] = $di->config->get('app.Pay.notify_url') . $this->engine . '/return.php';
         
         //获取配置
-        $config = DI()->config->get('app.Pay.' . $this->engine);
+        $config = $di->config->get('app.Pay.' . $this->engine);
 
         if(!$config){
-          DI()->logger->log('payError','No engine config', $this->engine);
+          $di->logger->log('payError','No engine config', $this->engine);
           return false;
         }
 
@@ -72,10 +76,10 @@ class Pay_Lite {
         $this->config = array_merge($this->config, $config);
 
         //设置引擎
-        $engine = 'Pay_Engine_' . ucfirst(strtolower($this->engine));
+        $engine = '\\PhalApi\\Pay\\Engine\\' . ucfirst(strtolower($this->engine));
         $this->payer = new $engine($this->config);
         if (!$this->payer) {
-            DI()->logger->log('payError','No engine class', $engine);
+            $di->logger->log('payError','No engine class', $engine);
             return false;
         }
         

@@ -1,4 +1,9 @@
 <?php
+namespace PhalApi\Pay\Engine;
+
+use PhalApi\Pay\Base;
+use PhalApi\Pay\Exception;
+
 /*
  * +----------------------------------------------------------------------
  * | 支付宝手机端引擎
@@ -7,13 +12,11 @@
  * +----------------------------------------------------------------------
  * | Author: summer <aer_c@qq.com> <qq7579476>
  * +----------------------------------------------------------------------
- * | This is not a free software, unauthorized no use and dissemination.
- * +----------------------------------------------------------------------
  * | Date
  * +----------------------------------------------------------------------
  */
 
-class Pay_Engine_Aliwap extends Pay_Base {
+class Aliwap extends Base {
 
     protected $gateway    = 'https://mapi.alipay.com/gateway.do?';
     protected $verify_url = 'https://mapi.alipay.com/gateway.do?service=notify_verify&';
@@ -40,7 +43,7 @@ class Pay_Engine_Aliwap extends Pay_Base {
      */
     public function check() {
         if (!$this->config['email'] || !$this->config['key'] || !$this->config['partner']) {
-            DI()->logger->log('payError','aliwap setting error');
+            \PhalApi\DI()->logger->log('payError','aliwap setting error');
             return false;
         }
         return true;
